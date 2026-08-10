@@ -27,9 +27,9 @@ function renderStorageInfo() {
           
           <div style="background:#1f2937;padding:20px;border-radius:8px;text-align:left;margin-bottom:24px;display:inline-block;border:1px solid var(--border-color);width:100%;box-sizing:border-box;">
             <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">Exact Folder Path:</div>
-            <div style="font-size:16px;font-family:monospace;color:var(--text-white);line-height:1.8;">
+            <div style="font-family:monospace;font-size:13px;color:#94a3b8;line-height:1.6;background:#1e293b;padding:16px;border-radius:8px">
               📁 Internal Storage <br/>
-              &nbsp;&nbsp;↳ 📁 Documents <br/>
+              &nbsp;&nbsp;↳ 📁 Download <br/>
               &nbsp;&nbsp;&nbsp;&nbsp;↳ 📁 Mohan E Ride <br/>
               &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;┣ 📁 Customer Copies <br/>
               &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;┗ 📁 Vendor Copies

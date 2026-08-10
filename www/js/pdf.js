@@ -18,7 +18,7 @@ const PDFGenerator = (() => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const folderName = copyType ? copyType.replace('Copy', 'Copies') : 'Invoices';
-    return `Mohan E Ride/${folderName}/${year}/${month}`;
+    return `Download/Mohan E Ride/${folderName}/${year}/${month}`;
   }
 
   async function generate(invoice, settings, copyType = '', skipWebDownload = false) {
@@ -98,7 +98,7 @@ const PDFGenerator = (() => {
         try {
           await Filesystem.mkdir({
             path: fullFolder,
-            directory: Directory.Documents,
+            directory: Directory.ExternalStorage,
             recursive: true,
           });
         } catch {}
@@ -106,10 +106,10 @@ const PDFGenerator = (() => {
         await Filesystem.writeFile({
           path: `${fullFolder}/${filename}`,
           data: base64,
-          directory: Directory.Documents,
+          directory: Directory.ExternalStorage,
         });
 
-        console.log(`PDF saved to Documents/${fullFolder}/${filename}`);
+        console.log(`PDF saved to ${fullFolder}/${filename}`);
       } catch (e) {
         console.error('Failed to save PDF to device:', e);
         if (!skipWebDownload) downloadBlob(blob, filename);
@@ -139,7 +139,7 @@ const PDFGenerator = (() => {
         const { Filesystem, Directory, Share } = window.Capacitor.Plugins;
         const fileResult = await Filesystem.getUri({
           path: `${result.folderPath}/${result.filename}`,
-          directory: Directory.Documents,
+          directory: Directory.ExternalStorage,
         });
 
         await Share.share({
@@ -172,9 +172,14 @@ const PDFGenerator = (() => {
 
   function printInvoice(invoice, settings) {
     const html = InvoiceTemplate.buildInvoiceHTML(invoice, settings);
-    const iframe = document.createElement('iframe');
-    iframe.style.cssText = 'position:fixed;right:100%;bottom:100%;width:0;height:0;border:none';
-    document.body.appendChild(iframe);
+    
+    let iframe = document.getElementById('print-iframe');
+    if (!iframe) {
+      iframe = document.createElement('iframe');
+      iframe.id = 'print-iframe';
+      iframe.style.cssText = 'position:fixed;right:100%;bottom:100%;width:0;height:0;border:none';
+      document.body.appendChild(iframe);
+    }
     
     const doc = iframe.contentWindow.document;
     doc.open();
@@ -199,7 +204,8 @@ const PDFGenerator = (() => {
           console.error('Print failed:', e);
           showToast('Printing not supported on this browser.', true);
         }
-        setTimeout(() => document.body.removeChild(iframe), 2000);
+        // CRITICAL: Do NOT remove the iframe on Android. 
+        // Removing the iframe while the native Print Spooler is open causes the WebView to crash when the user presses 'Back'.
       }, 500);
     };
   }
