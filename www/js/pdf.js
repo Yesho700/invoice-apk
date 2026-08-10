@@ -93,12 +93,12 @@ const PDFGenerator = (() => {
   async function savePDF(blob, base64, filename, folderPath, skipWebDownload = false) {
     if (window.Capacitor && window.Capacitor.isNativePlatform()) {
       try {
-        const { Filesystem, Directory } = window.Capacitor.Plugins;
+        const { Filesystem } = window.Capacitor.Plugins;
         const fullFolder = folderPath;
         try {
           await Filesystem.mkdir({
             path: fullFolder,
-            directory: Directory.Documents,
+            directory: 'DOCUMENTS',
             recursive: true,
           });
         } catch {}
@@ -106,7 +106,7 @@ const PDFGenerator = (() => {
         await Filesystem.writeFile({
           path: `${fullFolder}/${filename}`,
           data: base64,
-          directory: Directory.Documents,
+          directory: 'DOCUMENTS',
         });
 
         console.log(`PDF saved to Documents/${fullFolder}/${filename}`);
@@ -136,10 +136,10 @@ const PDFGenerator = (() => {
 
     if (window.Capacitor && window.Capacitor.isNativePlatform()) {
       try {
-        const { Filesystem, Directory, Share } = window.Capacitor.Plugins;
+        const { Filesystem, Share } = window.Capacitor.Plugins;
         const fileResult = await Filesystem.getUri({
           path: `${result.folderPath}/${result.filename}`,
-          directory: Directory.Documents,
+          directory: 'DOCUMENTS',
         });
 
         await Share.share({
@@ -222,14 +222,14 @@ const PDFGenerator = (() => {
   async function openPDF(folderPath, filename) {
     if (window.Capacitor && window.Capacitor.isNativePlatform()) {
       try {
-        const { Filesystem, Directory, FileOpener } = window.Capacitor.Plugins;
+        const { Filesystem, FileOpener } = window.Capacitor.Plugins;
         if (!FileOpener) {
           console.warn('FileOpener plugin not found');
           return;
         }
         const fileResult = await Filesystem.getUri({
           path: `${folderPath}/${filename}`,
-          directory: Directory.Documents,
+          directory: 'DOCUMENTS',
         });
         await FileOpener.open({
           filePath: fileResult.uri,
