@@ -18,7 +18,7 @@ const PDFGenerator = (() => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const folderName = copyType ? copyType.replace('Copy', 'Copies') : 'Invoices';
-    return `Download/Mohan E Ride/${folderName}/${year}/${month}`;
+    return `Mohan E Ride/${folderName}/${year}/${month}`;
   }
 
   async function generate(invoice, settings, copyType = '', skipWebDownload = false) {
@@ -98,7 +98,7 @@ const PDFGenerator = (() => {
         try {
           await Filesystem.mkdir({
             path: fullFolder,
-            directory: Directory.ExternalStorage,
+            directory: Directory.Documents,
             recursive: true,
           });
         } catch {}
@@ -106,10 +106,10 @@ const PDFGenerator = (() => {
         await Filesystem.writeFile({
           path: `${fullFolder}/${filename}`,
           data: base64,
-          directory: Directory.ExternalStorage,
+          directory: Directory.Documents,
         });
 
-        console.log(`PDF saved to ${fullFolder}/${filename}`);
+        console.log(`PDF saved to Documents/${fullFolder}/${filename}`);
       } catch (e) {
         console.error('Failed to save PDF to device:', e);
         if (!skipWebDownload) downloadBlob(blob, filename);
@@ -139,7 +139,7 @@ const PDFGenerator = (() => {
         const { Filesystem, Directory, Share } = window.Capacitor.Plugins;
         const fileResult = await Filesystem.getUri({
           path: `${result.folderPath}/${result.filename}`,
-          directory: Directory.ExternalStorage,
+          directory: Directory.Documents,
         });
 
         await Share.share({
@@ -170,7 +170,18 @@ const PDFGenerator = (() => {
     }
   }
 
-  function printInvoice(invoice, settings) {
+  async function printInvoice(invoice, settings) {
+    if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+      showToast('Preparing document...');
+      try {
+        const result = await generate(invoice, settings, 'Customer Copy', false);
+        await openPDF(result.folderPath, result.filename);
+      } catch (e) {
+        showToast('Failed to open print preview', true);
+      }
+      return;
+    }
+
     const html = InvoiceTemplate.buildInvoiceHTML(invoice, settings);
     
     let iframe = document.getElementById('print-iframe');
@@ -204,10 +215,31 @@ const PDFGenerator = (() => {
           console.error('Print failed:', e);
           showToast('Printing not supported on this browser.', true);
         }
-        // CRITICAL: Do NOT remove the iframe on Android. 
-        // Removing the iframe while the native Print Spooler is open causes the WebView to crash when the user presses 'Back'.
       }, 500);
     };
+  }
+
+  async function openPDF(folderPath, filename) {
+    if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+      try {
+        const { Filesystem, Directory, FileOpener } = window.Capacitor.Plugins;
+        if (!FileOpener) {
+          console.warn('FileOpener plugin not found');
+          return;
+        }
+        const fileResult = await Filesystem.getUri({
+          path: `${folderPath}/${filename}`,
+          directory: Directory.Documents,
+        });
+        await FileOpener.open({
+          filePath: fileResult.uri,
+          contentType: 'application/pdf',
+        });
+      } catch (e) {
+        console.error('Failed to open PDF:', e);
+        showToast('Could not open PDF automatically.', true);
+      }
+    }
   }
 
   function waitForImages(container) {
@@ -257,5 +289,5 @@ const PDFGenerator = (() => {
     return { customer: resCustomer, vendor: resVendor };
   }
 
-  return { generate, generateDual, sharePDF, printInvoice, downloadBlob, getPDFFilename, getFolderPath };
+  return { generate, generateDual, sharePDF, printInvoice, downloadBlob, openPDF, getPDFFilename, getFolderPath };
 })();

@@ -511,6 +511,9 @@ async function nfSave() {
       const settings = Storage.getSettings();
       const res = await PDFGenerator.generateDual(savedInv, settings);
       showToast(`✅ Saved to Documents/${res.customer.folderPath} & Documents/${res.vendor.folderPath}`);
+      if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+        await PDFGenerator.openPDF(res.customer.folderPath, res.customer.filename);
+      }
     } catch (pdfErr) {
       console.error('PDF error:', pdfErr);
       showToast('Invoice saved. PDF generation failed.', true);

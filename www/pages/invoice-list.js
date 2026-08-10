@@ -64,6 +64,9 @@ window.ivlGeneratePDF = async function(id) {
   try {
     const res = await PDFGenerator.generateDual(inv, settings);
     showToast(`✅ Saved to Documents/${res.customer.folderPath} & Documents/${res.vendor.folderPath}`);
+    if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+      await PDFGenerator.openPDF(res.customer.folderPath, res.customer.filename);
+    }
   } catch (e) {
     console.error(e);
     showToast('❌ PDF failed: ' + e.message, true);
