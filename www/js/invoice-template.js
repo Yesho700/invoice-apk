@@ -61,6 +61,7 @@ const InvoiceTemplate = (function () {
     }
 
     return `<div class="invoice-template-container">
+      ${inv.copyType ? `<div style="text-align:center;margin-bottom:10px;"><span style="font-weight:700;font-size:12px;letter-spacing:1px;text-transform:uppercase;border:1px solid #111;padding:2px 10px;border-radius:12px;">${escHtml(inv.copyType)}</span></div>` : ''}
       <header class="inv-header">
         <div>
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">

@@ -55,6 +55,28 @@ window.ivlDoSearch = function() {
 window.ivlPrev = function() { if (ivlState.page > 1) { ivlState.page--; ivlLoadData(); } };
 window.ivlNext = function() { ivlState.page++; ivlLoadData(); };
 
+window.ivlGeneratePDF = async function(id) {
+  const inv = Storage.getInvoiceById(id);
+  const settings = Storage.getSettings();
+  if (!inv) return;
+  
+  showToast('Generating PDF…');
+  try {
+    const res = await PDFGenerator.generateDual(inv, settings);
+    showToast(`✅ Saved to Documents/${res.customer.folderPath} & Documents/${res.vendor.folderPath}`);
+  } catch (e) {
+    console.error(e);
+    showToast('❌ PDF failed: ' + e.message, true);
+  }
+};
+
+window.ivlDelete = function(id, num) {
+  if (!confirm(`Delete invoice ${num}?\nThis cannot be undone.`)) return;
+  Storage.deleteInvoice(id);
+  showToast(`Invoice ${num} deleted.`);
+  ivlLoadData();
+};
+
 function ivlLoadData() {
   const { invoices, total } = Storage.getAllInvoices(ivlState);
   
@@ -77,7 +99,7 @@ function ivlLoadData() {
         <th>Invoice #</th><th>Customer</th><th>Date</th><th>Amount</th><th>Status</th><th>Actions</th>
       </tr></thead>
       <tbody>
-        ${invoices.map(inv => `<tr style="cursor:pointer" onclick="Router.navigate('#/invoices/${inv.id}')">
+        ${invoices.map(inv => `<tr style="cursor:pointer" onclick="ivlGeneratePDF('${inv.id}')">
           <td><strong style="color:var(--accent)">${escHtml(inv.invoiceNumber)}</strong></td>
           <td>
             <div>${escHtml(inv.buyerName)}</div>
@@ -87,7 +109,11 @@ function ivlLoadData() {
           <td>₹${formatINRPlain(inv.grandTotal)}</td>
           <td>${statusBadge(inv.status)}</td>
           <td>
-            <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();Router.navigate('#/invoices/${inv.id}/edit')">Edit</button>
+            <div style="display:flex;gap:4px;">
+              <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();Router.navigate('#/invoices/${inv.id}/edit')" title="Edit">✏️</button>
+              <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();Router.navigate('#/invoices/${inv.id}')" title="View Details">👁️</button>
+              <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();ivlDelete('${inv.id}', '${escHtml(inv.invoiceNumber)}')" title="Delete">🗑️</button>
+            </div>
           </td>
         </tr>`).join('')}
       </tbody>

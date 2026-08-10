@@ -112,8 +112,8 @@ async function detailDownloadPDF(id) {
   showToast('Generating PDF…');
 
   try {
-    const res = await PDFGenerator.generate(inv, settings);
-    showToast(`✅ PDF saved to Documents/${res.folderPath}`);
+    const res = await PDFGenerator.generateDual(inv, settings);
+    showToast(`✅ Saved to Documents/${res.customer.folderPath} & Documents/${res.vendor.folderPath}`);
   } catch (e) {
     console.error(e);
     showToast('❌ PDF failed: ' + e.message, true);

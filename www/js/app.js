@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { hash: '#/invoices',     label: 'All Invoices',   icon: 'file-text' },
   { hash: '#/history',      label: 'Invoice History',icon: 'clock' },
   { hash: '#/settings',     label: 'Settings',       icon: 'settings' },
+  { hash: '#/storage',      label: 'PDF Storage',    icon: 'folder' },
 ];
 
 const ICONS = {
@@ -22,6 +23,7 @@ const ICONS = {
   'zap':  `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`,
   'x':    `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
   'menu': `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>`,
+  'folder': `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`,
 };
 
 function icon(name) { return ICONS[name] || ''; }
@@ -184,4 +186,27 @@ window.addEventListener('hashchange', buildSidebar);
 
 document.addEventListener('DOMContentLoaded', () => {
   buildSidebar();
+
+  // Hardware Back Button handling for Android
+  if (window.Capacitor && window.Capacitor.isNativePlatform()) {
+    try {
+      const { App } = window.Capacitor.Plugins;
+      App.addListener('backButton', ({ canGoBack }) => {
+        const sidebar = document.getElementById('sidebar');
+        if (sidebar && sidebar.classList.contains('open')) {
+          closeSidebar();
+          return;
+        }
+        
+        const hash = window.location.hash;
+        if (hash === '#/dashboard' || hash === '' || hash === '#/') {
+          App.exitApp();
+        } else {
+          window.history.back();
+        }
+      });
+    } catch (e) {
+      console.error('Failed to register back button listener', e);
+    }
+  }
 });

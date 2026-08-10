@@ -509,8 +509,8 @@ async function nfSave() {
 
     try {
       const settings = Storage.getSettings();
-      await PDFGenerator.generate(savedInv, settings);
-      showToast('✅ Invoice saved and PDF generated!');
+      const res = await PDFGenerator.generateDual(savedInv, settings);
+      showToast(`✅ Saved to Documents/${res.customer.folderPath} & Documents/${res.vendor.folderPath}`);
     } catch (pdfErr) {
       console.error('PDF error:', pdfErr);
       showToast('Invoice saved. PDF generation failed.', true);

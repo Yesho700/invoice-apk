@@ -5,19 +5,23 @@
  */
 
 const PDFGenerator = (() => {
-  function getPDFFilename(invoice) {
-    const num = (invoice.invoiceNumber || 'INVOICE').replace(/\//g, '-');
-    return `Invoice_${num}.pdf`;
+  function getPDFFilename(invoice, copyType = '') {
+    const num = (invoice.invoiceNumber || 'INVOICE').replace(/[^a-zA-Z0-9_-]/g, '');
+    const name = (invoice.buyerName || 'Customer').replace(/[^a-zA-Z0-9_-]/g, '');
+    const date = (invoice.invoiceDate || new Date().toISOString().split('T')[0]);
+    const suffix = copyType ? `_${copyType.replace(' ', '')}` : '';
+    return `Invoice_${num}_${name}_${date}${suffix}.pdf`;
   }
 
-  function getFolderPath(invoice) {
+  function getFolderPath(invoice, copyType = '') {
     const date = new Date(invoice.invoiceDate || invoice.createdAt || Date.now());
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
-    return `Mohan E Ride/Invoices/${year}/${month}`;
+    const folderName = copyType ? copyType.replace('Copy', 'Copies') : 'Invoices';
+    return `Mohan E Ride/${folderName}/${year}/${month}`;
   }
 
-  async function generate(invoice, settings) {
+  async function generate(invoice, settings, copyType = '', skipWebDownload = false) {
     await loadDeps();
 
     const html = InvoiceTemplate.buildInvoiceHTML(invoice, settings);
@@ -72,13 +76,13 @@ const PDFGenerator = (() => {
         pdf.addImage(imgData, 'JPEG', 0, 0, imgW, imgH);
       }
 
-      const filename = getPDFFilename(invoice);
-      const folderPath = getFolderPath(invoice);
+      const filename = getPDFFilename(invoice, copyType);
+      const folderPath = getFolderPath(invoice, copyType);
 
       const blob = pdf.output('blob');
       const base64 = pdf.output('datauristring').split(',')[1];
 
-      await savePDF(blob, base64, filename, folderPath);
+      await savePDF(blob, base64, filename, folderPath, skipWebDownload);
 
       return { blob, filename, base64, folderPath };
     } finally {
@@ -86,7 +90,7 @@ const PDFGenerator = (() => {
     }
   }
 
-  async function savePDF(blob, base64, filename, folderPath) {
+  async function savePDF(blob, base64, filename, folderPath, skipWebDownload = false) {
     if (window.Capacitor && window.Capacitor.isNativePlatform()) {
       try {
         const { Filesystem, Directory } = window.Capacitor.Plugins;
@@ -108,10 +112,10 @@ const PDFGenerator = (() => {
         console.log(`PDF saved to Documents/${fullFolder}/${filename}`);
       } catch (e) {
         console.error('Failed to save PDF to device:', e);
-        downloadBlob(blob, filename);
+        if (!skipWebDownload) downloadBlob(blob, filename);
       }
     } else {
-      downloadBlob(blob, filename);
+      if (!skipWebDownload) downloadBlob(blob, filename);
     }
   }
 
@@ -128,7 +132,7 @@ const PDFGenerator = (() => {
 
   async function sharePDF(invoice, settings) {
     showToast('Generating PDF for sharing...');
-    const result = await generate(invoice, settings);
+    const result = await generate(invoice, settings, '', true);
 
     if (window.Capacitor && window.Capacitor.isNativePlatform()) {
       try {
@@ -149,19 +153,32 @@ const PDFGenerator = (() => {
         showToast('Share failed. PDF has been downloaded instead.', true);
       }
     } else if (navigator.share && result.blob) {
-      try {
-        const file = new File([result.blob], result.filename, { type: 'application/pdf' });
-        await navigator.share({ title: `Invoice ${invoice.invoiceNumber}`, files: [file] });
-      } catch {}
+      const file = new File([result.blob], result.filename, { type: 'application/pdf' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({ title: `Invoice ${invoice.invoiceNumber}`, files: [file] });
+        } catch (e) {
+          if (e.name !== 'AbortError') console.error(e);
+        }
+      } else {
+        downloadBlob(result.blob, result.filename);
+        showToast('Sharing files not supported. PDF downloaded instead.');
+      }
     } else {
-      showToast('PDF downloaded. Open it to share.');
+      downloadBlob(result.blob, result.filename);
+      showToast('Sharing not supported on this browser. PDF downloaded instead.');
     }
   }
 
   function printInvoice(invoice, settings) {
     const html = InvoiceTemplate.buildInvoiceHTML(invoice, settings);
-    const win = window.open('', '_blank');
-    win.document.write(`<!DOCTYPE html>
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = 'position:fixed;right:100%;bottom:100%;width:0;height:0;border:none';
+    document.body.appendChild(iframe);
+    
+    const doc = iframe.contentWindow.document;
+    doc.open();
+    doc.write(`<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
@@ -169,10 +186,22 @@ const PDFGenerator = (() => {
   <link rel="stylesheet" href="css/invoice-template.css">
   <style>body { margin: 0; } @media print { @page { size: A4 portrait; margin: 0; } }</style>
 </head>
-<body>${html}<script>window.onload=()=>setTimeout(()=>window.print(),300);</script>
-</body>
+<body>${html}</body>
 </html>`);
-    win.document.close();
+    doc.close();
+
+    iframe.onload = () => {
+      setTimeout(() => {
+        try {
+          iframe.contentWindow.focus();
+          iframe.contentWindow.print();
+        } catch (e) {
+          console.error('Print failed:', e);
+          showToast('Printing not supported on this browser.', true);
+        }
+        setTimeout(() => document.body.removeChild(iframe), 2000);
+      }, 500);
+    };
   }
 
   function waitForImages(container) {
@@ -208,5 +237,19 @@ const PDFGenerator = (() => {
     });
   }
 
-  return { generate, sharePDF, printInvoice, downloadBlob, getPDFFilename, getFolderPath };
+  async function generateDual(invoice, settings) {
+    showToast('Generating Customer & Vendor copies...');
+    
+    const invCustomer = { ...invoice, copyType: 'Customer Copy' };
+    const resCustomer = await generate(invCustomer, settings, 'Customer Copy', false);
+    
+    const invVendor = { ...invoice, copyType: 'Vendor Copy' };
+    // On the web browser, downloading 2 files at once is annoying spam.
+    // We skip the second web download, but on Android APK, both will still be cleanly saved!
+    const resVendor = await generate(invVendor, settings, 'Vendor Copy', true);
+
+    return { customer: resCustomer, vendor: resVendor };
+  }
+
+  return { generate, generateDual, sharePDF, printInvoice, downloadBlob, getPDFFilename, getFolderPath };
 })();
