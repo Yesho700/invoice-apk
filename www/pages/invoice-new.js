@@ -32,7 +32,7 @@ async function renderInvoiceNew(params = {}) {
               <a href="#/invoices" style="color:var(--text-muted);font-size:12px;display:block">← All Invoices</a>
               <h1 style="color:var(--text-white);font-size:17px;font-weight:700;margin:0">${isEdit ? 'Edit Invoice' : 'Create Invoice'}</h1>
               <div style="color:var(--text-muted);font-size:11px;margin-top:1px">
-                Invoice No.: <strong style="color:#5be016" id="nf-inv-num">${isEdit ? '…' : Storage.peekNextInvoiceNumber(s.invoicePrefix || 'PM')}</strong>
+                INV: <strong style="color:#5be016" id="nf-inv-num">${isEdit ? '…' : Storage.peekNextInvoiceNumber(s.invoicePrefix || 'PM')}</strong>
               </div>
             </div>
           </div>

@@ -75,7 +75,7 @@ const InvoiceTemplate = (function () {
         <div style="text-align:right">
           <h2 class="inv-title">TAX INVOICE</h2>
           <table class="inv-meta-table">
-            <tr><td class="ml">Invoice No.</td><td><strong>${escHtml(inv.invoiceNumber)}</strong></td></tr>
+            <tr><td class="ml">INV</td><td><strong>${escHtml(inv.invoiceNumber)}</strong></td></tr>
             <tr><td class="ml">Date</td><td style="width:100px">${fmtDate(inv.invoiceDate)}</td></tr>
           </table>
         </div>
@@ -104,7 +104,7 @@ const InvoiceTemplate = (function () {
         </tr></thead>
         <tbody><tr>
           <td>
-            <div style="min-height: 380px; display: flex; flex-direction: column;">
+            <div style="display: flex; flex-direction: column;">
             <ul class="det-list">
               <li><strong>Brand / Type</strong><span>${escHtml(vd.model || '')}</span></li>
               <li><strong>Model No.</strong><span>${escHtml(vd.variant || '')}</span></li>

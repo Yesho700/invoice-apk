@@ -53,7 +53,7 @@ const Storage = (() => {
     counter[prefix][fy] += 1;
     write(KEYS.COUNTER, counter);
     const seq = String(counter[prefix][fy]).padStart(4, '0');
-    return `${prefix}-${fy}-${seq}`;
+    return seq;
   }
 
   function peekNextInvoiceNumber(prefix) {
@@ -61,7 +61,7 @@ const Storage = (() => {
     const fy      = getCurrentFinancialYear();
     const current = (counter[prefix]?.[fy] || 0) + 1;
     const seq     = String(current).padStart(4, '0');
-    return `${prefix}-${fy}-${seq}`;
+    return seq;
   }
 
   // ─── SETTINGS ─────────────────────────────────────────────────────────────
