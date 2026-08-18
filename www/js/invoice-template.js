@@ -65,10 +65,10 @@ const InvoiceTemplate = (function () {
       <header class="inv-header">
         <div>
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
-            ${s.dealershipLogoPath ? `<img src="${s.dealershipLogoPath}" style="width:38px;height:38px;object-fit:contain;border-radius:50%">` : '<div class="logo-fb">MER</div>'}
+            ${s.dealershipLogoPath ? `<img src="${s.dealershipLogoPath}" style="height:46px;width:auto;max-width:120px;object-fit:contain;">` : '<div class="logo-fb">MER</div>'}
             <h1 class="inv-h1">MOHAN <span style="color:#5be016">E RIDE</span></h1>
           </div>
-          <p class="inv-dealer-line">AUTHORIZED DEALER :- ${s.delticLogoPath ? `<img src="${s.delticLogoPath}" style="height:28px;object-fit:contain;vertical-align:middle">` : '<strong>DELTIC</strong>'}</p>
+          <p class="inv-dealer-line">AUTHORIZED DEALER :- ${s.delticLogoPath ? `<img src="${s.delticLogoPath}" style="height:34px;width:auto;max-width:200px;object-fit:contain;vertical-align:middle;margin-left:6px;">` : '<strong>DELTIC</strong>'}</p>
           <p class="inv-dealer-line-p">${escHtml(s.address1 || 'Convent School Road, Tulsi Sagar, Ghazipur')}</p>
           <p class="inv-dealer-line-p">WhatsApp / Call: +91 ${escHtml(s.whatsapp || s.mobile || '6393268950')}</p>
         </div>
