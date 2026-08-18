@@ -31,9 +31,9 @@ async function renderSettings() {
                 ${s.dealershipLogoPath ? `<img src="${s.dealershipLogoPath}" id="logo-preview" />` : '<div id="logo-preview" style="color:var(--text-muted);font-size:11px;padding:10px">No logo</div>'}
                 <label class="upload-label" style="margin-top:8px">
                   📷 Choose Image
-                  <input type="file" accept="image/*" style="display:none" onchange="settingsUploadImage(this,'dealershipLogoPath','logo-preview')">
+                  <input type="file" accept="image/*" style="display:none" onchange="settingsUploadImage(this,'dealershipLogoPath','logo-preview','logo-remove')">
                 </label>
-                ${s.dealershipLogoPath ? `<button onclick="settingsClearImage('dealershipLogoPath','logo-preview')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:11px;margin-top:4px">✕ Remove</button>` : ''}
+                <button id="logo-remove" onclick="settingsClearImage('dealershipLogoPath','logo-preview','logo-remove')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:11px;margin-top:4px; ${s.dealershipLogoPath ? '' : 'display:none;'}">✕ Remove</button>
               </div>
             </div>
             <div class="form-group">
@@ -42,9 +42,9 @@ async function renderSettings() {
                 ${s.delticLogoPath ? `<img src="${s.delticLogoPath}" id="deltic-preview" />` : '<div id="deltic-preview" style="color:var(--text-muted);font-size:11px;padding:10px">No logo</div>'}
                 <label class="upload-label" style="margin-top:8px">
                   📷 Choose Image
-                  <input type="file" accept="image/*" style="display:none" onchange="settingsUploadImage(this,'delticLogoPath','deltic-preview')">
+                  <input type="file" accept="image/*" style="display:none" onchange="settingsUploadImage(this,'delticLogoPath','deltic-preview','deltic-remove')">
                 </label>
-                ${s.delticLogoPath ? `<button onclick="settingsClearImage('delticLogoPath','deltic-preview')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:11px;margin-top:4px">✕ Remove</button>` : ''}
+                <button id="deltic-remove" onclick="settingsClearImage('delticLogoPath','deltic-preview','deltic-remove')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:11px;margin-top:4px; ${s.delticLogoPath ? '' : 'display:none;'}">✕ Remove</button>
               </div>
             </div>
             <div class="form-group">
@@ -53,9 +53,9 @@ async function renderSettings() {
                 ${s.signaturePath ? `<img src="${s.signaturePath}" id="sig-preview" />` : '<div id="sig-preview" style="color:var(--text-muted);font-size:11px;padding:10px">No signature</div>'}
                 <label class="upload-label" style="margin-top:8px">
                   📷 Choose Image
-                  <input type="file" accept="image/*" style="display:none" onchange="settingsUploadImage(this,'signaturePath','sig-preview')">
+                  <input type="file" accept="image/*" style="display:none" onchange="settingsUploadImage(this,'signaturePath','sig-preview','sig-remove')">
                 </label>
-                ${s.signaturePath ? `<button onclick="settingsClearImage('signaturePath','sig-preview')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:11px;margin-top:4px">✕ Remove</button>` : ''}
+                <button id="sig-remove" onclick="settingsClearImage('signaturePath','sig-preview','sig-remove')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:11px;margin-top:4px; ${s.signaturePath ? '' : 'display:none;'}">✕ Remove</button>
               </div>
             </div>
           </div>
@@ -129,7 +129,7 @@ async function renderSettings() {
   buildSidebar();
   window._pendingImages = {};
 
-  window.settingsUploadImage = (input, field, previewId) => {
+  window.settingsUploadImage = (input, field, previewId, removeBtnId) => {
     const file = input.files[0];
     if (!file) return;
     const reader = new FileReader();
@@ -138,15 +138,19 @@ async function renderSettings() {
       window._pendingImages[field] = b64;
       const el = document.getElementById(previewId);
       if (el) el.outerHTML = `<img src="${b64}" id="${previewId}" style="max-height:60px;max-width:100%;object-fit:contain;border-radius:4px;margin-bottom:10px;display:block;margin-left:auto;margin-right:auto;" />`;
+      const rmBtn = document.getElementById(removeBtnId);
+      if (rmBtn) rmBtn.style.display = 'inline-block';
       showToast('Image ready — click Save Settings to apply.');
     };
     reader.readAsDataURL(file);
   };
 
-  window.settingsClearImage = (field, previewId) => {
+  window.settingsClearImage = (field, previewId, removeBtnId) => {
     window._pendingImages[field] = '';
     const el = document.getElementById(previewId);
     if (el) el.outerHTML = `<div id="${previewId}" style="color:var(--text-muted);font-size:11px;padding:10px">Removed (save to confirm)</div>`;
+    const rmBtn = document.getElementById(removeBtnId);
+    if (rmBtn) rmBtn.style.display = 'none';
     showToast('Image removed — click Save Settings to apply.');
   };
 
