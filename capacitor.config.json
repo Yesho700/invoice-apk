@@ -1,6 +1,6 @@
 {
   "appId": "com.mohanecode.invoicemanager",
-  "appName": "Mohan E Ride",
+  "appName": "Mohan E Ride Invoice",
   "webDir": "www",
   "plugins": {
     "SplashScreen": {

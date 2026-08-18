@@ -14,11 +14,12 @@ const PDFGenerator = (() => {
   }
 
   function getFolderPath(invoice, copyType = '') {
-    const date = new Date(invoice.invoiceDate || invoice.createdAt || Date.now());
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const folderName = copyType ? copyType.replace('Copy', 'Copies') : 'Invoices';
-    return `Mohan E Ride/${folderName}/${year}/${month}`;
+    if (copyType === 'Customer Copy') {
+      return 'MER_Invoice/customer_copy';
+    } else if (copyType === 'Vendor Copy') {
+      return 'MER_Invoice/vendor_copy';
+    }
+    return 'MER_Invoice/invoices';
   }
 
   async function generate(invoice, settings, copyType = '', skipWebDownload = false) {
@@ -32,9 +33,12 @@ const PDFGenerator = (() => {
       left: -9999px;
       top: 0;
       width: 794px;
+      height: 1123px;
       background: white;
       z-index: -9999;
       font-family: 'Segoe UI', Arial, sans-serif;
+      -webkit-text-size-adjust: 100% !important;
+      text-size-adjust: 100% !important;
     `;
     container.innerHTML = html;
     document.body.appendChild(container);

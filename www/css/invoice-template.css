@@ -7,17 +7,25 @@
   font-size: 14px;
   color: #111;
   width: 794px;
+  height: 1123px;
   min-height: 1123px;
+  max-height: 1123px;
   /* A4 size */
   padding: 45px 40px 24px 40px;
   display: flex;
   flex-direction: column;
   margin: 0 auto;
   box-sizing: border-box;
+  overflow: hidden;
+  position: relative;
+  -webkit-text-size-adjust: 100% !important;
+  text-size-adjust: 100% !important;
 }
 
 .invoice-template-container * {
   box-sizing: border-box;
+  -webkit-text-size-adjust: 100% !important;
+  text-size-adjust: 100% !important;
 }
 
 :root {
@@ -130,10 +138,14 @@
 }
 
 .customer-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  justify-content: space-between;
   gap: 12px;
   margin-bottom: 6px;
+}
+
+.customer-row > div {
+  flex: 1;
 }
 
 .customer-full {
@@ -212,7 +224,8 @@
 
 .bat-lines {
   margin-top: 12px;
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 6px;
   background: var(--brand-light);
   padding: 12px;
