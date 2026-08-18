@@ -14,7 +14,7 @@ const InvoiceTemplate = (function () {
   }
 
   function buildInvoiceHTML(inv, settings) {
-    const s   = settings || {};
+    const s = settings || {};
     const fmt = n => new Intl.NumberFormat('en-IN', {
       minimumFractionDigits: 2, maximumFractionDigits: 2
     }).format(n || 0);
@@ -23,14 +23,14 @@ const InvoiceTemplate = (function () {
       if (!d) return '';
       try {
         const dt = new Date(d);
-        return `${String(dt.getDate()).padStart(2,'0')}-${String(dt.getMonth()+1).padStart(2,'0')}-${dt.getFullYear()}`;
+        return `${String(dt.getDate()).padStart(2, '0')}-${String(dt.getMonth() + 1).padStart(2, '0')}-${dt.getFullYear()}`;
       } catch { return escHtml(d); }
     };
 
     // Parse vehicleDetails — can be string or object
     let vd = {};
     if (typeof inv.vehicleDetails === 'string') {
-      try { vd = JSON.parse(inv.vehicleDetails || '{}'); } catch(e) {}
+      try { vd = JSON.parse(inv.vehicleDetails || '{}'); } catch (e) { }
     } else {
       vd = inv.vehicleDetails || {};
     }
@@ -44,11 +44,11 @@ const InvoiceTemplate = (function () {
 
     // Terms — one per line
     const termsRaw = inv.termsAndConditions || s.termsAndConditions || '';
-    const terms    = termsRaw.split('\n').filter(Boolean);
+    const terms = termsRaw.split('\n').filter(Boolean);
 
     const buyerAddr = [inv.buyerAddress1, inv.buyerCity, inv.buyerState, inv.buyerPincode]
       .filter(Boolean).join(', ');
-    const hsnCode   = inv.hsnSac || (inv.items || [])[0]?.hsnSac || '';
+    const hsnCode = inv.hsnSac || (inv.items || [])[0]?.hsnSac || '';
 
     // Tax rows
     let taxRows = '';
@@ -62,6 +62,9 @@ const InvoiceTemplate = (function () {
 
     return `<div class="invoice-template-container">
       ${inv.copyType ? `<div style="position:absolute;top:15px;left:50%;transform:translateX(-50%);text-align:center;z-index:10;"><span style="background:white;font-weight:700;font-size:11px;letter-spacing:1px;text-transform:uppercase;border:1px solid #111;padding:2px 10px;border-radius:12px;">${escHtml(inv.copyType)}</span></div>` : ''}
+      <div style="position:absolute;top:${inv.copyType ? '65px' : '60px'};left:50%;transform:translateX(-50%);text-align:center;z-index:10;border:2px solid #222;padding:6px 16px;">
+        <h2 class="inv-title" style="margin:0;">TAX INVOICE</h2>
+      </div>
       <header class="inv-header">
         <div>
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
@@ -73,7 +76,9 @@ const InvoiceTemplate = (function () {
           <p class="inv-dealer-line-p">WhatsApp / Call: +91 ${escHtml(s.whatsapp || s.mobile || '6393268950')}</p>
         </div>
         <div style="text-align:right">
-          <h2 class="inv-title">TAX INVOICE</h2>
+          <div style="font-size:14px;font-weight:800;color:var(--brand-dark);margin-bottom:8px;text-transform:uppercase;">
+            GSTIN: ${s.gstin ? escHtml(s.gstin) : '<span style="color:red;font-weight:normal;font-size:11px;text-transform:none">Not set</span>'}
+          </div>
           <table class="inv-meta-table">
             <tr><td class="ml">INV</td><td><strong>${escHtml(inv.invoiceNumber)}</strong></td></tr>
             <tr><td class="ml">Date</td><td style="width:100px">${fmtDate(inv.invoiceDate)}</td></tr>
@@ -116,7 +121,7 @@ const InvoiceTemplate = (function () {
             </ul>
             <div class="bat-label">Battery Numbers:</div>
             <div class="bat-lines">
-              ${batteries.slice(0, 6).map((b, i) => `<div class="bat-item"><span class="bat-num">${i+1}</span><div class="bat-line">${escHtml(b)}</div></div>`).join('')}
+              ${batteries.slice(0, 6).map((b, i) => `<div class="bat-item"><span class="bat-num">${i + 1}</span><div class="bat-line">${escHtml(b)}</div></div>`).join('')}
             </div>
             </div>
           </td>

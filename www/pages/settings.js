@@ -73,6 +73,10 @@ async function renderSettings() {
               <label class="form-label">Authorized Signatory Name</label>
               <input class="form-input" id="s-signatoryName" value="${escHtml(s.signatoryName)}" />
             </div>
+            <div class="form-group">
+              <label class="form-label">GSTIN Number</label>
+              <input class="form-input" id="s-gstin" value="${escHtml(s.gstin || '')}" />
+            </div>
             <div class="form-group col-span-2">
               <label class="form-label">Dealership Address *</label>
               <input class="form-input" id="s-address1" value="${escHtml(s.address1)}" />
@@ -161,6 +165,7 @@ async function renderSettings() {
     const data = {
       invoicePrefix:     document.getElementById('s-invoicePrefix').value || 'PM',
       signatoryName:     document.getElementById('s-signatoryName').value,
+      gstin:             document.getElementById('s-gstin').value,
       address1:          document.getElementById('s-address1').value,
       whatsapp:          document.getElementById('s-whatsapp').value,
       defaultCgstRate:   Number(document.getElementById('s-defaultCgstRate').value),
